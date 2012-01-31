@@ -58,11 +58,7 @@
 generate_documentation = (source, callback) ->
   fs.readFile source, "utf-8", (error, code) ->
     throw error if error
-    language = get_language source
-    if language.name == 'xslt'
-      sections = parse_xml source, code
-    else
-      sections = parse source, code
+    sections = parse source, code
     highlight source, sections, ->
       generate_html source, sections
       callback()
@@ -79,15 +75,22 @@ generate_documentation = (source, callback) ->
 #     }
 #
 parse = (source, code) ->
-  lines    = code.split '\n'
-  sections = []
   language = get_language source
+  if language.name == 'xslt'
+    # http://stackoverflow.com/questions/5653207/
+    re = /<!(--[\s\S]*?)-->/g
+    lines    = code.split re
+  else
+    lines    = code.split '\n'
+  sections = []
   has_code = docs_text = code_text = ''
 
   save = (docs, code) ->
     sections.push docs_text: docs, code_text: code
 
   for line in lines
+    if line == undefined
+      line = ''
     if line.match(language.comment_matcher) and not line.match(language.comment_filter)
       if has_code
         save docs_text, code_text
@@ -97,27 +100,6 @@ parse = (source, code) ->
       has_code = yes
       code_text += line + '\n'
   save docs_text, code_text
-  sections
-
-# Given xml source code, parse out each comment and the code that
-# follows it, and create an individual **section** for it.
-#
-#     {
-#       docs_text: ...
-#       docs_html: ...
-#       code_text: ...
-#       code_html: ...
-#     }
-# `source` is a filepath and `code` fs.readFile contents
-parse_xml = (source, contents) ->
-  sections = []
-  language = get_language source
-  has_code = docs_text = code_text = ''
-
-  # save the text out of the code and the docs
-  save = (docs, code) ->
-    sections.push docs_text: docs, code_text: code
-
   sections
 
 # Highlights a single chunk of CoffeeScript code, using **Pygments** over stdio,
@@ -196,7 +178,7 @@ languages =
   '.h':
     name: 'c', symbol: '//'
   '.xslt':
-    name: 'xslt', symbol: '<'
+    name: 'xslt', symbol: '--'
 
 # Build out the appropriate matchers and delimiters for each language.
 for ext, l of languages
@@ -210,12 +192,18 @@ for ext, l of languages
 
   # The dividing token we feed into Pygments, to delimit the boundaries between
   # sections.
-  l.divider_text = '\n' + l.symbol + 'DIVIDER\n'
+  if l.name == 'xslt'
+    l.divider_text = '\n' + '<!-- DIVIDER -->'
+  else
+    l.divider_text = '\n' + l.symbol + 'DIVIDER\n'
 
   # The mirror of `divider_text` that we expect Pygments to return. We can split
   # on this to recover the original sections.
   # Note: the class is "c" for Python and "c1" for the other languages
-  l.divider_html = new RegExp('\\n*<span class="c1?">' + l.symbol + 'DIVIDER<\\/span>\\n*')
+  if l.name == 'xslt'
+    l.divider_html = new RegExp('\\n*<span class="c1?">.*DIVIDER.*<\\/span>\\n*')
+  else 
+    l.divider_html = new RegExp('\\n*<span class="c1?">' + l.symbol + 'DIVIDER<\\/span>\\n*')
 
 # Get the current language we're documenting, based on the extension.
 get_language = (source) -> languages[path.extname(source)]
