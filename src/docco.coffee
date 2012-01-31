@@ -179,6 +179,8 @@ languages =
     name: 'c', symbol: '//'
   '.xslt':
     name: 'xslt', symbol: '--'
+  '.xsl':
+    name: 'xslt', symbol: '--'
 
 # Build out the appropriate matchers and delimiters for each language.
 for ext, l of languages
