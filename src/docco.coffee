@@ -175,6 +175,8 @@ languages =
     name: 'tex', symbol: '%'
   '.c':
     name: 'c', symbol: '//'
+  '.groovy':
+    name: 'groovy', symbol: '//'
   '.h':
     name: 'c', symbol: '//'
   '.xslt':
