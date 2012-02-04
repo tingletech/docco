@@ -177,6 +177,8 @@ languages =
     name: 'c', symbol: '//'
   '.groovy':
     name: 'groovy', symbol: '//'
+  '.grm':
+    name: 'groovy', symbol: '//'
   '.h':
     name: 'c', symbol: '//'
   '.xslt':
