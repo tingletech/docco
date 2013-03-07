@@ -8,6 +8,8 @@
     {"name": "python", "symbol" : "#"},
   ".feature":
     {"name" : "gherkin", "symbol" : "#"},
+  ".sh":
+    {"name" : "bash", "symbol" : "#"},
   ".yaml":
     {"name" : "yaml", "symbol" : "#"},
   ".tex":
